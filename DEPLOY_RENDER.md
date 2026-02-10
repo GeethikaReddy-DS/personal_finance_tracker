@@ -32,9 +32,11 @@ git push origin main
 3. Fill in:
    - **Name**: `personal-finance-tracker` (or your choice)
    - **Environment**: Select `Python 3`
-   - **Build Command**: `pip install -r requirements-prod.txt && python manage.py collectstatic --noinput`
+   - **Build Command**: `pip install -r requirements-prod.txt && python manage.py migrate && python manage.py collectstatic --noinput`
    - **Start Command**: `gunicorn config.wsgi`
    - **Plan**: Leave as "Free" (or upgrade to paid)
+
+**Note**: Migrations run automatically in the build command, so no Shell access needed!
 
 ### 4. Add Environment Variables
 
@@ -69,19 +71,21 @@ git push origin main
 2. Monitor the deploy progress in the **"Events"** tab
 3. Wait for the build to complete (5-10 minutes on first deploy)
 
-### 7. Run Migrations
-
-1. Once deploy is successful, click **"Shell"** tab in Render dashboard
-2. Run:
-   ```bash
-   python manage.py migrate
-   python manage.py createsuperuser
-   ```
-3. Create a superuser account for Django admin
-
-### 8. Access Your App
+### 7. Access Your App
 
 Your app is now live at: `https://your-app-name.onrender.com`
+
+**Important**: 
+- Migrations run automatically during deployment (included in build command)
+- No Shell access needed (Shell is a paid feature on Render)
+- To use the app:
+  1. Visit `/register/` to create your first user account
+  2. Categories are auto-created via Django signals
+  3. Start adding transactions and budgets!
+
+**Django Admin Access** (optional):
+- Admin access is not required for the main app features
+- If you need it, use paid Shell or create a management command to auto-create a superuser via environment variables
 
 ---
 

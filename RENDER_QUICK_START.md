@@ -14,7 +14,7 @@
 3. **Click "New +" → "Web Service"**
    - Select your repo
    - **Name**: `personal-finance-tracker`
-   - **Build Command**: `pip install -r requirements-prod.txt && python manage.py collectstatic --noinput`
+   - **Build Command**: `pip install -r requirements-prod.txt && python manage.py migrate && python manage.py collectstatic --noinput`
    - **Start Command**: `gunicorn config.wsgi`
    - Click "Create Web Service"
 
@@ -30,14 +30,16 @@
    - Region: Same as Web Service
    - Database URL auto-added to Web Service
 
-6. **After deploy succeeds**, click "Shell" and run:
-   ```bash
-   python manage.py migrate
-   python manage.py createsuperuser
-   python manage.py shell -c "from transactions.signals import create_user_profile; from django.contrib.auth.models import User; u = User.objects.first(); u.profile"
-   ```
+6. **Wait for deployment** (5-10 minutes)
+   - Migrations run automatically during build (see build command above)
+   - No Shell needed!
 
 7. **Visit**: `https://your-app-name.onrender.com`
+   - Go to `/register/` and create your first user account
+   - Categories are auto-created via Django signals
+   - Start adding transactions!
+
+**Note**: Admin access is optional. If you need Django admin, create a superuser locally with same credentials, or use the `/register/` page and manually promote the user to staff via database tools.
 
 ---
 
