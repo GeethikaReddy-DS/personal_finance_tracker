@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+
+{% block title %}Monthly Report - Personal Finance Tracker{% endblock %}
+
+{% block content %}
+<div class="page-title">
+    <i class="fas fa-chart-bar"></i> Monthly Report
+</div>
+<div class="underline"></div>
+
+<!-- Month Navigation -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="get" class="form-inline justify-content-center">
+                    <input type="hidden" name="month" value="{{ month }}">
+                    <input type="hidden" name="year" value="{% if month == 1 %}{{ year|add:'-1' }}{% else %}{{ year }}{% endif %}">
+                    <button type="submit" class="btn btn-secondary mr-2">
+                        <i class="fas fa-chevron-left"></i> Previous
+                    </button>
+                    
+                    <span class="mx-3">
+                        <strong>{{ month_start|date:"F Y" }}</strong>
+                    </span>
+                    
+                    <form method="get" class="form-inline">
+                        <input type="hidden" name="month" value="{% if month == 12 %}1{% else %}{{ month|add:'1' }}{% endif %}">
+                        <input type="hidden" name="year" value="{% if month == 12 %}{{ year|add:'1' }}{% else %}{{ year }}{% endif %}">
+                        <button type="submit" class="btn btn-secondary ml-2">
+                            <i class="fas fa-chevron-right"></i> Next
+                        </button>
+                    </form>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="stat-card income">
+            <h6><i class="fas fa-arrow-up"></i> Income</h6>
+            <div class="amount">{{ month_income|floatformat:2 }}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card expense">
+            <h6><i class="fas fa-arrow-down"></i> Expense</h6>
+            <div class="amount">{{ month_expense|floatformat:2 }}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card savings">
+            <h6><i class="fas fa-piggy-bank"></i> Savings</h6>
+            <div class="amount">{{ month_savings|floatformat:2 }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="fas fa-chart-pie"></i> Income Breakdown</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="incomeChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="fas fa-chart-pie"></i> Expense Breakdown</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="expenseChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Breakdown Tables -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-arrow-up"></i> Income by Category</h5>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Category</th>
+                            <th class="text-right">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in income_by_category %}
+                            <tr>
+                                <td>{{ item.category__name }}</td>
+                                <td class="text-right font-weight-bold">{{ item.total|floatformat:2 }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="2" class="text-center text-muted py-3">No income this month</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="fas fa-arrow-down"></i> Expense by Category</h5>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Category</th>
+                            <th class="text-right">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in expense_by_category %}
+                            <tr>
+                                <td>{{ item.category__name }}</td>
+                                <td class="text-right font-weight-bold">{{ item.total|floatformat:2 }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="2" class="text-center text-muted py-3">No expenses this month</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Income Chart
+    {% if income_by_category %}
+        const incomeCtx = document.getElementById('incomeChart').getContext('2d');
+        new Chart(incomeCtx, {
+            type: 'doughnut',
+            data: {
+                labels: [{% for item in income_by_category %}'{{ item.category__name }}'{% if not forloop.last %},{% endif %}{% endfor %}],
+                datasets: [{
+                    data: [{% for item in income_by_category %}{{ item.total }}{% if not forloop.last %},{% endif %}{% endfor %}],
+                    backgroundColor: ['#10b981', '#059669', '#047857', '#065f46'],
+                    borderColor: '#fff',
+                    borderWidth: 2
+                }]
+            },
+            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+        });
+    {% endif %}
+
+    // Expense Chart
+    {% if expense_by_category %}
+        const expenseCtx = document.getElementById('expenseChart').getContext('2d');
+        new Chart(expenseCtx, {
+            type: 'doughnut',
+            data: {
+                labels: [{% for item in expense_by_category %}'{{ item.category__name }}'{% if not forloop.last %},{% endif %}{% endfor %}],
+                datasets: [{
+                    data: [{% for item in expense_by_category %}{{ item.total }}{% if not forloop.last %},{% endif %}{% endfor %}],
+                    backgroundColor: ['#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16'],
+                    borderColor: '#fff',
+                    borderWidth: 2
+                }]
+            },
+            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+        });
+    {% endif %}
+</script>
+{% endblock %}

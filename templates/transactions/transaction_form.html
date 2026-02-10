@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if action == 'Edit' %}Edit{% else %}Add{% endif %} Transaction - Personal Finance Tracker{% endblock %}
+
+{% block content %}
+<div class="page-title">
+    <i class="fas fa-exchange-alt"></i> {% if action == 'Edit' %}Edit{% else %}Add{% endif %} Transaction
+</div>
+<div class="underline"></div>
+
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">{% if action == 'Edit' %}Edit Transaction{% else %}Create New Transaction{% endif %}</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="form-group">
+                        <label for="{{ form.category.id_for_label }}">Category *</label>
+                        {{ form.category }}
+                        {% if form.category.errors %}
+                            <small class="text-danger">{{ form.category.errors.0 }}</small>
+                        {% endif %}
+
+                        {% if not has_categories %}
+                            <div class="alert alert-info mt-2">
+                                You don't have any categories yet. Create one first to assign transactions.
+                                <a href="{% url 'category_create' %}" class="font-weight-bold ml-1">Add Category</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="{{ form.amount.id_for_label }}">Amount *</label>
+                            {{ form.amount }}
+                            {% if form.amount.errors %}
+                                <small class="text-danger">{{ form.amount.errors.0 }}</small>
+                            {% endif %}
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="{{ form.currency.id_for_label }}">Currency *</label>
+                            {{ form.currency }}
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="{{ form.date.id_for_label }}">Date *</label>
+                            {{ form.date }}
+                            {% if form.date.errors %}
+                                <small class="text-danger">{{ form.date.errors.0 }}</small>
+                            {% endif %}
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="{{ form.is_refund.id_for_label }}">
+                                {{ form.is_refund }} Mark as Refund
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.description.id_for_label }}">Description</label>
+                        {{ form.description }}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.receipt_file.id_for_label }}">Upload Receipt (Optional)</label>
+                        {{ form.receipt_file }}
+                        <small class="form-text text-muted">Accepted formats: PDF, JPG, JPEG, PNG</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-save"></i> {% if action == 'Edit' %}Update{% else %}Create{% endif %} Transaction
+                        </button>
+                        <a href="{% url 'transaction_list' %}" class="btn btn-secondary btn-lg ml-2">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

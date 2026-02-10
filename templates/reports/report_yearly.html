@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+
+{% block title %}Yearly Report - Personal Finance Tracker{% endblock %}
+
+{% block content %}
+<div class="page-title">
+    <i class="fas fa-chart-bar"></i> Yearly Report - {{ year }}
+</div>
+<div class="underline"></div>
+
+<!-- Year Navigation -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body text-center">
+                <form method="get" class="form-inline justify-content-center">
+                    <input type="hidden" name="year" value="{{ year|add:'-1' }}">
+                    <button type="submit" class="btn btn-secondary mr-2">
+                        <i class="fas fa-chevron-left"></i> {{ year|add:'-1' }}
+                    </button>
+                    
+                    <span class="mx-3">
+                        <strong style="font-size: 1.5rem;">{{ year }}</strong>
+                    </span>
+                    
+                    <form method="get" class="form-inline">
+                        <input type="hidden" name="year" value="{{ year|add:'1' }}">
+                        <button type="submit" class="btn btn-secondary ml-2">
+                            {{ year|add:'1' }} <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </form>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Summary -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="stat-card income">
+            <h6><i class="fas fa-arrow-up"></i> Total Income</h6>
+            <div class="amount">{{ yearly_income|floatformat:2 }}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card expense">
+            <h6><i class="fas fa-arrow-down"></i> Total Expense</h6>
+            <div class="amount">{{ yearly_expense|floatformat:2 }}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card savings">
+            <h6><i class="fas fa-piggy-bank"></i> Total Savings</h6>
+            <div class="amount">{{ yearly_savings|floatformat:2 }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Monthly Trend Chart -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="fas fa-chart-line"></i> Monthly Trend</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="trendChart" height="80"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Monthly Breakdown Table -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="fas fa-table"></i> Monthly Breakdown</h5>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Month</th>
+                            <th class="text-right">Income</th>
+                            <th class="text-right">Expense</th>
+                            <th class="text-right">Savings</th>
+                            <th class="text-right">% Saved</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for month_data in yearly_data %}
+                            <tr>
+                                <td>{{ month_data.month_name }}</td>
+                                <td class="text-right">{{ month_data.income|floatformat:2 }}</td>
+                                <td class="text-right">{{ month_data.expense|floatformat:2 }}</td>
+                                <td class="text-right font-weight-bold">{{ month_data.savings|floatformat:2 }}</td>
+                                <td class="text-right">
+                                    {% widthratio month_data.savings month_data.income 100 %}%
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const trendCtx = document.getElementById('trendChart').getContext('2d');
+    new Chart(trendCtx, {
+        type: 'line',
+        data: {
+            labels: [{% for item in yearly_data %}'{{ item.month_name }}'{% if not forloop.last %},{% endif %}{% endfor %}],
+            datasets: [
+                {
+                    label: 'Income',
+                    data: [{% for item in yearly_data %}{{ item.income }}{% if not forloop.last %},{% endif %}{% endfor %}],
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                },
+                {
+                    label: 'Expense',
+                    data: [{% for item in yearly_data %}{{ item.expense }}{% if not forloop.last %},{% endif %}{% endfor %}],
+                    borderColor: '#ef4444',
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                },
+                {
+                    label: 'Savings',
+                    data: [{% for item in yearly_data %}{{ item.savings }}{% if not forloop.last %},{% endif %}{% endfor %}],
+                    borderColor: '#2563eb',
+                    backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom' }
+            },
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+</script>
+{% endblock %}

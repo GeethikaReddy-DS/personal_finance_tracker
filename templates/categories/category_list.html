@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}Categories - Personal Finance Tracker{% endblock %}
+
+{% block content %}
+<div class="page-title">
+    <i class="fas fa-tags"></i> Categories
+</div>
+<div class="underline"></div>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <a href="{% url 'category_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add Category
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Income Categories -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-arrow-up"></i> Income Categories</h5>
+            </div>
+            <div class="list-group list-group-flush">
+                {% for category in income_categories %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>{{ category.name }}</span>
+                        <form method="post" action="{% url 'category_delete' category.id %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                {% empty %}
+                    <div class="list-group-item text-muted text-center py-4">
+                        No income categories yet.
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Expense Categories -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="fas fa-arrow-down"></i> Expense Categories</h5>
+            </div>
+            <div class="list-group list-group-flush">
+                {% for category in expense_categories %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>{{ category.name }}</span>
+                        <form method="post" action="{% url 'category_delete' category.id %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                {% empty %}
+                    <div class="list-group-item text-muted text-center py-4">
+                        No expense categories yet.
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

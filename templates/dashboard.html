@@ -1,13 +1,214 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Dashboard</title>
-</head>
-<body>
-    <h1>Dashboard</h1>
+{% extends 'base.html' %}
 
-    <p>Total Income: {{ income }}</p>
-    <p>Total Expense: {{ expense }}</p>
-    <p>Savings: {{ savings }}</p>
-</body>
-</html>
+{% block title %}Dashboard - Personal Finance Tracker{% endblock %}
+
+{% block content %}
+<div class="page-title">
+    <i class="fas fa-chart-line"></i> Dashboard
+</div>
+<div class="underline"></div>
+
+<!-- Monthly Overview -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="stat-card income">
+            <h6><i class="fas fa-arrow-up"></i> This Month Income</h6>
+            <div class="amount">{{ profile.preferred_currency }} {{ month_income|floatformat:2 }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card expense">
+            <h6><i class="fas fa-arrow-down"></i> This Month Expense</h6>
+            <div class="amount">{{ profile.preferred_currency }} {{ month_expense|floatformat:2 }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card savings">
+            <h6><i class="fas fa-piggy-bank"></i> This Month Savings</h6>
+            <div class="amount">{{ profile.preferred_currency }} {{ month_savings|floatformat:2 }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <h6><i class="fas fa-history"></i> All Time Savings</h6>
+            <div class="amount">{{ profile.preferred_currency }} {{ all_savings|floatformat:2 }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Budget Warnings -->
+{% if budget_warnings %}
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                <h6 class="alert-heading">
+                    <i class="fas fa-exclamation-triangle"></i> Budget Alerts
+                </h6>
+                {% for warning in budget_warnings %}
+                    <div>
+                        <strong>{{ warning.budget.category.name }}:</strong> 
+                        You have exceeded your budget by {{ profile.preferred_currency }} {{ warning.overspent|floatformat:2 }}
+                        <a href="{% url 'budget_detail' warning.budget.id %}" class="alert-link">View</a>
+                    </div>
+                {% endfor %}
+                <button type="button" class="close" data-dismiss="alert">
+                    <span>&times;</span>
+                </button>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<!-- Charts Section -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="fas fa-chart-pie"></i> Expense Breakdown</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="expenseChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="fas fa-chart-pie"></i> Income Breakdown</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="incomeChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Transactions -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-exchange-alt"></i> Recent Transactions</h5>
+                <a href="{% url 'transaction_list' %}" class="btn btn-sm btn-primary">View All</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Date</th>
+                            <th>Category</th>
+                            <th>Description</th>
+                            <th>Amount</th>
+                            <th>Type</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for transaction in recent_transactions %}
+                            <tr>
+                                <td>{{ transaction.date|date:"M d, Y" }}</td>
+                                <td>{{ transaction.category.name|default:"Uncategorized" }}</td>
+                                <td>{{ transaction.description|truncatewords:5 }}</td>
+                                <td class="font-weight-bold">{{ profile.preferred_currency }} {{ transaction.amount|floatformat:2 }}</td>
+                                <td>
+                                    {% if transaction.category.type == 'income' %}
+                                        <span class="badge badge-income">Income</span>
+                                    {% else %}
+                                        <span class="badge badge-expense">Expense</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">
+                                    No transactions yet. <a href="{% url 'transaction_create' %}">Create one</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-center gap-2">
+            <a href="{% url 'transaction_create' %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-plus"></i> Add Transaction
+            </a>
+            <a href="{% url 'budget_create' %}" class="btn btn-success btn-lg">
+                <i class="fas fa-piggy-bank"></i> Set Budget
+            </a>
+            <a href="{% url 'report_monthly' %}" class="btn btn-info btn-lg">
+                <i class="fas fa-chart-bar"></i> View Reports
+            </a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Expense Chart
+    {% if expense_breakdown %}
+        const expenseCtx = document.getElementById('expenseChart').getContext('2d');
+        new Chart(expenseCtx, {
+            type: 'doughnut',
+            data: {
+                labels: [{% for item in expense_breakdown %}'{{ item.category__name }}'{% if not forloop.last %},{% endif %}{% endfor %}],
+                datasets: [{
+                    data: [{% for item in expense_breakdown %}{{ item.total }}{% if not forloop.last %},{% endif %}{% endfor %}],
+                    backgroundColor: [
+                        '#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16',
+                        '#22c55e', '#10b981', '#14b8a6', '#06b6d4', '#0ea5e9'
+                    ],
+                    borderColor: '#fff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    {% else %}
+        document.getElementById('expenseChart').innerHTML = '<div class="text-center text-muted py-4">No expense data</div>';
+    {% endif %}
+
+    // Income Chart
+    {% if income_breakdown %}
+        const incomeCtx = document.getElementById('incomeChart').getContext('2d');
+        new Chart(incomeCtx, {
+            type: 'doughnut',
+            data: {
+                labels: [{% for item in income_breakdown %}'{{ item.category__name }}'{% if not forloop.last %},{% endif %}{% endfor %}],
+                datasets: [{
+                    data: [{% for item in income_breakdown %}{{ item.total }}{% if not forloop.last %},{% endif %}{% endfor %}],
+                    backgroundColor: [
+                        '#10b981', '#059669', '#047857', '#065f46'
+                    ],
+                    borderColor: '#fff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    {% else %}
+        document.getElementById('incomeChart').innerHTML = '<div class="text-center text-muted py-4">No income data</div>';
+    {% endif %}
+</script>
+{% endblock %}

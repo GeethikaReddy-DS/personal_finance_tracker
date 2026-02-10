@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+
+{% block title %}Budget Details - Personal Finance Tracker{% endblock %}
+
+{% block content %}
+<div class="page-title">
+    <i class="fas fa-piggy-bank"></i> {{ budget.category.name }} Budget
+</div>
+<div class="underline"></div>
+
+<div class="row">
+    <div class="col-md-8">
+        <!-- Budget Overview -->
+        <div class="card mb-4">
+            <div class="card-header {% if budget.is_over_budget %}bg-danger text-white{% else %}bg-success text-white{% endif %}">
+                <h5 class="mb-0">Budget Overview - {{ budget.get_period_display }}</h5>
+            </div>
+            <div class="card-body">
+                <div class="progress mb-3" style="height: 30px;">
+                    <div class="progress-bar {% if budget.is_over_budget %}bg-danger{% else %}bg-success{% endif %}" 
+                         role="progressbar" 
+                         style="width: {{ budget.percentage_used|floatformat:0 }}%"
+                         aria-valuenow="{{ budget.percentage_used|floatformat:0 }}" 
+                         aria-valuemin="0" 
+                         aria-valuemax="100">
+                        {{ budget.percentage_used|floatformat:1 }}%
+                    </div>
+                </div>
+
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <p><small class="text-muted">Spent</small></p>
+                        <h5 class="font-weight-bold">{{ budget.spent|floatformat:2 }}</h5>
+                    </div>
+                    <div class="col-md-4">
+                        <p><small class="text-muted">Limit</small></p>
+                        <h5 class="font-weight-bold">{{ budget.limit|floatformat:2 }}</h5>
+                    </div>
+                    <div class="col-md-4">
+                        <p><small class="text-muted">{% if budget.is_over_budget %}Over{% else %}Remaining{% endif %}</small></p>
+                        <h5 class="font-weight-bold {% if budget.is_over_budget %}text-danger{% else %}text-success{% endif %}">
+                            {{ budget.remaining|floatformat:2 }}
+                        </h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transactions for this Budget -->
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="fas fa-exchange-alt"></i> Related Transactions</h5>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for transaction in transactions %}
+                            <tr>
+                                <td>{{ transaction.date|date:"M d, Y" }}</td>
+                                <td>{{ transaction.description|truncatewords:10|default:"—" }}</td>
+                                <td class="font-weight-bold">{{ transaction.amount|floatformat:2 }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted py-4">
+                                    No transactions for this budget yet.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="fas fa-info-circle"></i> Budget Info</h5>
+            </div>
+            <div class="card-body">
+                <p>
+                    <strong>Category:</strong> {{ budget.category.name }}
+                </p>
+                <p>
+                    <strong>Period:</strong> {{ budget.get_period_display }}
+                </p>
+                <p>
+                    <strong>Start Date:</strong> {{ budget.start_date|date:"M d, Y" }}
+                </p>
+                {% if budget.end_date %}
+                    <p>
+                        <strong>End Date:</strong> {{ budget.end_date|date:"M d, Y" }}
+                    </p>
+                {% endif %}
+                <p>
+                    <strong>Status:</strong>
+                    {% if budget.is_over_budget %}
+                        <span class="badge badge-danger">Over Budget</span>
+                    {% else %}
+                        <span class="badge badge-success">On Track</span>
+                    {% endif %}
+                </p>
+            </div>
+            <div class="card-footer bg-light">
+                <a href="{% url 'budget_edit' budget.id %}" class="btn btn-sm btn-warning btn-block mb-2">
+                    <i class="fas fa-edit"></i> Edit Budget
+                </a>
+                <a href="{% url 'budget_list' %}" class="btn btn-sm btn-secondary btn-block">
+                    <i class="fas fa-arrow-left"></i> Back to Budgets
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile - Personal Finance Tracker{% endblock %}
+
+{% block content %}
+<div class="page-title">
+    <i class="fas fa-user-circle"></i> My Profile
+</div>
+<div class="underline"></div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="fas fa-user"></i> Personal Information</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="{{ user_form.first_name.id_for_label }}">First Name</label>
+                            {{ user_form.first_name }}
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="{{ user_form.last_name.id_for_label }}">Last Name</label>
+                            {{ user_form.last_name }}
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ user_form.email.id_for_label }}">Email</label>
+                        {{ user_form.email }}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ pref_form.preferred_currency.id_for_label }}">Preferred Currency</label>
+                        {{ pref_form.preferred_currency }}
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="fas fa-info-circle"></i> Account Info</h5>
+            </div>
+            <div class="card-body">
+                <p>
+                    <strong>Username:</strong> {{ user.username }}
+                </p>
+                <p>
+                    <strong>Member Since:</strong> {{ user.date_joined|date:"M d, Y" }}
+                </p>
+                <p>
+                    <strong>Last Login:</strong> 
+                    {% if user.last_login %}
+                        {{ user.last_login|date:"M d, Y H:i" }}
+                    {% else %}
+                        Never
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
