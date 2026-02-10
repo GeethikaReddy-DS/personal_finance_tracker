@@ -193,19 +193,19 @@ DEFAULT_FROM_EMAIL = 'your-email@gmail.com'
 # Session settings
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 SESSION_COOKIE_AGE = 1209600  # 2 weeks
-# Enable secure cookies on Heroku (detect via DYNO env var for production)
-ON_HEROKU = 'DYNO' in os.environ
-SESSION_COOKIE_SECURE = ON_HEROKU or os.getenv('SECURE_SSL_REDIRECT', 'False').lower() in ('1', 'true')
+# Enable secure cookies on production (Heroku, Render, etc.)
+IS_PRODUCTION = not DEBUG
+SESSION_COOKIE_SECURE = IS_PRODUCTION
 SESSION_COOKIE_HTTPONLY = True
-CSRF_COOKIE_SECURE = SESSION_COOKIE_SECURE
+CSRF_COOKIE_SECURE = IS_PRODUCTION
 
 # Login settings
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'login'
 
-# Security settings (enable in production on Heroku)
-if ON_HEROKU:
+# Security settings (enable in production)
+if IS_PRODUCTION:
     SECURE_SSL_REDIRECT = True
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True

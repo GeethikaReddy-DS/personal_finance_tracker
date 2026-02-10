@@ -605,3 +605,7 @@ INFO 2026-02-10 20:12:12,119 autoreload C:\Users\ageet\OneDrive\Desktop\personal
 INFO 2026-02-10 20:12:12,727 autoreload Watching for file changes with StatReloader
 INFO 2026-02-10 20:12:33,802 autoreload C:\Users\ageet\OneDrive\Desktop\personal_finance_tracker\config\settings.py changed, reloading.
 INFO 2026-02-10 20:12:34,464 autoreload Watching for file changes with StatReloader
+INFO 2026-02-10 21:57:12,919 autoreload C:\Users\ageet\OneDrive\Desktop\personal_finance_tracker\config\settings.py changed, reloading.
+INFO 2026-02-10 21:57:14,182 autoreload Watching for file changes with StatReloader
+INFO 2026-02-10 22:00:51,224 autoreload C:\Users\ageet\OneDrive\Desktop\personal_finance_tracker\config\settings.py changed, reloading.
+INFO 2026-02-10 22:00:52,052 autoreload Watching for file changes with StatReloader
