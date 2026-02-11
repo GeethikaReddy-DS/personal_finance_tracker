@@ -2,6 +2,9 @@
 
 A comprehensive Django-based web application for managing personal finances, tracking income, expenses, and investments with reporting and budgeting features.
 
+# Live Project Link : https://personal-finance-tracker-yi58.onrender.com
+# Demo video Link : https://www.loom.com/share/5c5b3e8b89ef4495967be8c7d283b5e7
+
 ## Features
 
 ### ✅ Day 1-2: Basic Functionality
